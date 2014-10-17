@@ -4,7 +4,7 @@ xml = require 'xml2js'
 
 module.exports = class Parser
 
-  constructor: (@conditionField = 'opcode') ->
+  constructor: (@rootNode = 'root', @conditionField = 'opcode') ->
     @packetHead = null # packet header
     @builder = new xml.Builder()
 
@@ -46,15 +46,15 @@ module.exports = class Parser
   parseByName: (data, packetName, callback) =>
     @autoParse data, callback, packetName
 
-  # parse given data by code table
+  # parse given data by code tables
   parse: (data, callback, packetName = null) =>
-    packetName = @packetNameConditions[condition] if not packetName?
     parsedData = { }
 
     parseString data.toString(), (err, result) =>
-      parsed = result['root']
+      parsed = result[@rootNode]
       condition = parsed[@conditionField][0]
 
+      packetName = @packetNameConditions[condition] if not packetName?
       packet = @packetCollection[packetName]
 
       for element, type of packet.packetParseData
