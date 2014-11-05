@@ -5,11 +5,13 @@ xml = require 'xml2js'
 module.exports = class Parser
 
   constructor: (@rootNode = 'root', @conditionField = 'opcode') ->
-    @packetHead = null # packet header
+    @packetHead = null # packet header, may not be defined
     @builder = new xml.Builder()
 
     @packetCollection = { } # collection of packets
-    @packetNameConditions = { }
+
+    # packet conditions are just for parser, not for serializer
+    @packetConditions = { }
 
   registerHead: () ->
     @packetHead = new Packet("_Head");
@@ -22,21 +24,21 @@ module.exports = class Parser
   setConditionField: (@conditionField) ->
 
   registerPacket: (name, condition = null) ->
-    packet = new Packet(name)
+    packet = new Packet(name, @packetHead)
 
-    if @getHead()?
-      for parse in @getHead().packetParseData
-        packet.packetParseData.push parse # give all packets header packet
+    #if @getHead()?
+    #  for parse in @getHead().packetParseData
+    #    packet.packetParseData.push parse # give all packets header packet
 
     @packetCollection[name] = packet
     @registerCondition name, condition
 
-    return @packetCollection[name] # return packet
+    return packet # return newly created packet
 
   # registers condition for given packet name
   registerCondition: (packetName, condition) ->
     if condition?
-      @packetNameConditions[condition] = packetName
+      @packetConditions[condition] = packetName
 
   getPacket: (name) ->
     return @packetCollection[name] if @packetCollection[name]?
@@ -44,7 +46,7 @@ module.exports = class Parser
 
   # parse given data by packet name
   parseByName: (data, packetName, callback) =>
-    @autoParse data, callback, packetName
+    @parse data, callback, packetName # just call parse with previously given name
 
   # parse given data by code tables
   parse: (data, callback, packetName = null) =>
@@ -52,9 +54,16 @@ module.exports = class Parser
 
     parseString data.toString(), (err, result) =>
       parsed = result[@rootNode]
+
+      if @getHead()?
+        # type is now ignored due to xml
+        for element, type of @getHead().packetParseData
+          parsedData[element] = parsed[element][0]
+
+      # retrieve condition from the parsed data ( should this be in head ? )
       condition = parsed[@conditionField][0]
 
-      packetName = @packetNameConditions[condition] if not packetName?
+      packetName = @packetConditions[condition] if not packetName?
       packet = @packetCollection[packetName]
 
       for element, type of packet.packetParseData
@@ -64,6 +73,9 @@ module.exports = class Parser
 
   serialize: (data, packetName, callback) =>
     packet = @packetCollection[packetName]
+
+    for name, value of packet.predefinedValues
+      data[name] = value if not data[name]? # assign default value if not defined
 
     obj = @builder.buildObject(data).replace(/(\r\n|\n|\r)/gm, '')
 
