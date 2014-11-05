@@ -1,0 +1,28 @@
+{
+  "name": "packetbuddyxml",
+  "version": "0.0.2-a",
+  "description": "Easy to use lightweight xml parser based on top of xml2js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gelidus/packetbuddyxml.git"
+  },
+  "keywords": [
+    "xml",
+    "parser",
+    "buddy",
+    "packet"
+  ],
+  "author": "Gelidus",
+  "license": "GNU",
+  "bugs": {
+    "url": "https://github.com/Gelidus/packetbuddyxml/issues"
+  },
+  "homepage": "https://github.com/Gelidus/packetbuddyxml",
+  "dependencies": {
+    "xml2js": "^0.4.4"
+  }
+}
