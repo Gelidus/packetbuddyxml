@@ -31,7 +31,9 @@ module.exports = class Parser
     #    packet.packetParseData.push parse # give all packets header packet
 
     @packetCollection[name] = packet
-    @registerCondition name, condition
+
+    if name[0] not in ['S'] # @TODO: remove hack, represent C and S packets separately
+      @registerCondition name, condition
 
     return packet # return newly created packet
 
