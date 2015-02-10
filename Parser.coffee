@@ -4,51 +4,91 @@ xml = require 'xml2js'
 
 module.exports = class Parser
 
-  constructor: (@rootNode = 'root', @conditionField = 'opcode') ->
-    @packetHead = null # packet header, may not be defined
+  # @injectable
+  constructor: (isServer, head, rootNode = 'root', conditionField = 'opcode') ->
+    @isServer = isServer
+    @head = if head? then head else new Packet("Head")
+    @rootNode = rootNode
+    @conditionField = conditionField
+
     @builder = new xml.Builder()
 
-    @packetCollection = { } # collection of packets
-
-    # packet conditions are just for parser, not for serializer
+    @serverPackets = { }
+    @clientPackets = { }
     @packetConditions = { }
 
-  registerHead: () ->
-    @packetHead = new Packet("_Head");
+  ###
+    @return [Packet] packet representing head for all packets
+  ###
+  getHead: () =>
+    return @head
 
-    return @packetHead
+  ###
+    sets the current head to the given
 
-  getHead: () ->
-    return @packetHead
+    @param head [Packet] packet to be given as a head packet
+    @return [Packet] new head packet instance
+  ###
+  setHead: (head) =>
+    @head = head
+    return @head
 
-  setConditionField: (@conditionField) ->
+  ###
+    Sets the condition field to the custom one
 
-  registerPacket: (name, condition = null) ->
-    packet = new Packet(name, @packetHead)
+    @param conditionField[String] name of condition field in packet
+  ###
+  setConditionField:(@conditionField) ->
 
-    #if @getHead()?
-    #  for parse in @getHead().packetParseData
-    #    packet.packetParseData.push parse # give all packets header packet
+  registerPacket: (packet, isServerPacket, condition = null) ->
 
-    @packetCollection[name] = packet
+    if isServerPacket # switch between server and client packets
+      @serverPackets[packet.name] = packet
+    else
+      @clientPackets[packet.name] = packet
 
-    if name[0] not in ['S'] # @TODO: remove hack, represent C and S packets separately
-      @registerCondition name, condition
+    # register condition for current packet
+    if (@isServer and not isServerPacket) or (not @isServer and isServerPacket)
+      @registerCondition(packet.name, condition)
+    else
+      packet.addPredefinedValue(@conditionField, condition) # adds as predefined value
 
-    return packet # return newly created packet
+    return packet
 
-  # registers condition for given packet name
-  registerCondition: (packetName, condition) ->
-    if condition?
-      @packetConditions[condition] = packetName
+  packet: (name, isServerPacket, structure) =>
+    condition = @findCondition(structure) # get additional condition
 
-  getPacket: (name) ->
-    return @packetCollection[name] if @packetCollection[name]?
+    packet = new Packet(name, @head)
+    packet.add(structure)
+
+    return @registerPacket(packet, isServerPacket, condition)
+
+  ###
+  Finds condition field value in the packet structure
+
+  @param structure [Array] an array of structured for the packet
+  @return [String|Integer|Null] value of condition field or null if not found
+  ###
+  findCondition: (structure) ->
+    for field in structure
+      for name, value of field
+        if name is @conditionField
+          return value
+
     return null
 
-  # parse given data by packet name
-  parseByName: (data, packetName, callback) =>
-    @parse data, callback, packetName # just call parse with previously given name
+  ###
+  Returns packet from collection by given type
+
+  @param packetName [String] packet name from collection
+  @param isServer [Boolean] true if server packet is needed, else false. Default: true
+  ###
+  getPacket: (packetName, isServer = true) =>
+    return if isServer then @serverPackets[packetName] else @clientPackets[packetName]
+
+  registerCondition: (packetName, condition = null) ->
+    if condition? and packetName?
+      @packetConditions[condition] = packetName
 
   # parse given data by code tables
   parse: (data, callback, packetName = null) =>
@@ -59,22 +99,26 @@ module.exports = class Parser
 
       if @getHead()?
         # type is now ignored due to xml
-        for element, type of @getHead().packetParseData
-          parsedData[element] = parsed[element][0]
+        for parser in @getHead().packetParseData
+          parsedData[parser["name"]] = parser["read"](parsed)
 
       # retrieve condition from the parsed data ( should this be in head ? )
       condition = parsed[@conditionField][0]
 
-      packetName = @packetConditions[condition] if not packetName?
-      packet = @packetCollection[packetName]
+      name = if packetName? then packetName else @packetConditions[condition]
+      packet = @getPacket(name, !@isServer)
 
-      for element, type of packet.packetParseData
-        parsedData[element] = parsed[element][0]
+      if not packet?
+        callback(null, null)
+        return
 
-      callback(packetName, parsedData)
+      for parser in packet.packetParseData
+        parsedData[parser["name"]] = parser["read"](parsed)
+
+      callback(name, parsedData)
 
   serialize: (data, packetName, callback) =>
-    packet = @packetCollection[packetName]
+    packet = @getPacket(packetName, @isServer)
 
     for name, value of packet.predefinedValues
       data[name] = value if not data[name]? # assign default value if not defined
