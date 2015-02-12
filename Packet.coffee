@@ -54,139 +54,131 @@ module.exports = class Packet
     return length
 
   addAny: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return xml[field][0]
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return xml[@name][0]
+    }
+
+    return @
 
   addUInt8: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return parseInt(xml[field][0])
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return parseInt(xml[@name][0])
+    }
 
     return @
 
   addInt8: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return parseInt(xml[field][0])
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return parseInt(xml[@name][0])
+    }
 
     return @
 
   addUInt16LE: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return parseInt(xml[field][0])
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return parseInt(xml[@name][0])
+    }
 
     return @
 
   addUInt32LE: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return parseInt(xml[field][0])
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return parseInt(xml[@name][0])
+    }
 
     return @
 
   addInt16LE: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return parseInt(xml[field][0])
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return parseInt(xml[@name][0])
+    }
 
     return @
 
   addInt32LE: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return parseInt(xml[field][0])
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return parseInt(xml[@name][0])
+    }
 
     return @
 
   addDoubleLE: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return parseFloat(xml[field][0])
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return parseFloat(xml[@name][0])
+    }
 
     return @
 
   addFloatLE: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return parseFloat(xml[field][0])
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return parseFloat(xml[@name][0])
+    }
 
     return @
 
   addStringLE: (field) ->
-    do (field) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          return xml[field][0]
-      }
+    @packetParseData.push {
+      name: field
+      read: (xml) ->
+        return xml[@name][0]
+    }
 
     return @
 
   addUInt8Array: (field, count) ->
-    do (field, count) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          arr = []
-          for number in xml[field]
-            arr.push(parseInt(number))
-          return arr
-      }
+    @packetParseData.push {
+      name: field
+      count: count
+      read: (xml) ->
+        arr = []
+        for number in xml[@name]
+          arr.push(parseInt(number))
+        return arr
+    }
 
     return @
 
   addUInt16LEArray: (field, count) ->
-    do (field, count) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          arr = []
-          for number in xml[field]
-            arr.push(parseInt(number))
-          return arr
-      }
+    @packetParseData.push {
+      name: field
+      count: count
+      read: (xml) ->
+        arr = []
+        for number in xml[@name]
+          arr.push(parseInt(number))
+        return arr
+    }
 
     return @
 
   addUInt32LEArray: (field, count) ->
-    do (field, count) =>
-      @packetParseData.push {
-        name: field
-        read: (xml) ->
-          arr = []
-          for number in xml[field]
-            arr.push(parseInt(number))
+    @packetParseData.push {
+      name: field
+      count: count
+      read: (xml) ->
+        arr = []
+        for number in xml[@name]
+          arr.push(parseInt(number))
 
-          return arr
-      }
+        return arr
+    }
 
     return @
