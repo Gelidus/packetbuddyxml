@@ -106,6 +106,29 @@ describe "Packet", () ->
       }, "arraytwo", (serialized) ->
         done()
 
+    it "should correctly create two same packets", (done) ->
+      packetOne = new Packet("packetOne", packetHead)
+      packetTwo = new Packet("packetTwo", packetHead)
+
+      packetOne.addUInt8("myData")
+      packetTwo.addUInt8("yourData");
+
+      packetOne.packetParseData[0].should.be.ok
+      packetOne.packetParseData[0].name.should.be.eql("myData")
+
+      parser.registerPacket(packetOne, false, 0)
+      parser.registerPacket(packetOne, true, 0)
+
+      parser.serialize {
+        myData: 55
+      }, "packetOne", (serialized) ->
+        parser.parse serialized, (name, data) ->
+          (data?).should.be.true
+          (data.opcode?).should.be.true
+          (data.myData?).should.be.true
+          data.myData.should.be.eql(55)
+          done()
+
   describe "Advanced #add() method packet tests", () ->
 
     it "should add structure to the packet with #add() method", () ->
