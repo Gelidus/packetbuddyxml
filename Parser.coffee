@@ -4,18 +4,20 @@ xml = require 'xml2js'
 
 module.exports = class Parser
 
-  # @injectable
-  constructor: (isServer, head, rootNode = 'root', conditionField = 'opcode') ->
-    @isServer = isServer
-    @head = if head? then head else new Packet("Head")
-    @rootNode = rootNode
-    @conditionField = conditionField
-
+  constructor: (@isServer) ->
+    @head = new Packet("Head")
     @builder = new xml.Builder()
 
     @serverPackets = { }
     @clientPackets = { }
     @packetConditions = { }
+
+  ###
+    @injectable
+  ###
+  initialize: (rootNode = "root", conditionField = "opcode") ->
+    @rootNode = rootNode
+    @conditionField = conditionField
 
   ###
     @return [Packet] packet representing head for all packets
