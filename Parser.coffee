@@ -99,10 +99,11 @@ module.exports = class Parser
     parseString data.toString(), (err, result) =>
       parsed = result[@rootNode]
 
+      # parse head
       if @getHead()?
         # type is now ignored due to xml
         for parser in @getHead().packetParseData
-          parsedData[parser["name"]] = parser["read"](parsed)
+          parsedData[parser["name"]] = if parsed[parser.name]? then parser["read"](parsed) else null
 
       # retrieve condition from the parsed data ( should this be in head ? )
       condition = parsed[@conditionField][0]
@@ -114,8 +115,9 @@ module.exports = class Parser
         callback(null, null)
         return
 
+      # parse body
       for parser in packet.packetParseData
-        parsedData[parser["name"]] = parser["read"](parsed)
+        parsedData[parser["name"]] = if parsed[parser.name]? then parser["read"](parsed)
 
       callback(name, parsedData)
 
