@@ -2,7 +2,7 @@ require "should"
 Parser = require "../Parser"
 Packet = require "../Packet"
 
-describe "Packet", () ->
+describe "PacketBuddyXML", () ->
 
   ###
   Basic tests
@@ -32,7 +32,7 @@ describe "Packet", () ->
       packet.packetParseData[0].should.be.ok
       packet.packetParseData[0].name.should.be.eql("data")
 
-      packet.addStringLE("string")
+      packet.addString("string")
 
       packet.packetParseData[1].should.be.ok
       packet.packetParseData[1].name.should.be.eql("string")
@@ -142,7 +142,7 @@ describe "Packet", () ->
 
       firstPacket.add [
         something: 'uint8'
-      , int: 'int32le'
+      , int: 'int32'
       ]
 
       firstPacket.packetParseData.length.should.be.eql(2)
@@ -167,7 +167,7 @@ describe "Packet", () ->
       firstPacket.add [
         opcode: 0
       , something: 'uint8'
-      , int: 'int32le'
+      , int: 'int32'
       ]
 
       parser.registerPacket(firstPacket, false, 0) # client packet
@@ -182,4 +182,46 @@ describe "Packet", () ->
           data["opcode"].should.be.eql(0)
           data["something"].should.be.eql(12)
           data["int"].should.be.eql(1800)
+          done()
+
+  describe "Parser Advanced tests on incorrect xml format", () ->
+    parser = null
+
+    it "should construct and setup parser", () ->
+      parser = new Parser(true)
+      parser.initialize()
+
+      parser.getHead().add({ opcode: "string" })
+
+      parser.packet "test", true, [
+        opcode: 0
+      , text: "string"
+      , code: "uint32"
+      ]
+
+      parser.packet "test", false, [
+        opcode: 0
+      , text: "string"
+      , code: "uint32"
+      ]
+
+    it "should try to serialize and parse correct packet", (done) ->
+      parser.serialize {
+        text: "lol wtf"
+        code: 42
+      }, "test", (serialized) ->
+        parser.parse serialized, (name, data) ->
+          (data?).should.be.ok
+          data["text"].should.be.eql("lol wtf")
+          data["code"].should.be.eql(42)
+          done()
+
+    it "should try to serialize partially serializable packet", (done) ->
+      parser.serialize {
+        text: "lol wtf"
+      }, "test", (serialized) ->
+        parser.parse serialized, (name, data) ->
+          data?.should.be.ok
+          data["code"]?.should.be.true
+          data["text"].should.be.eql("lol wtf")
           done()
