@@ -14,13 +14,13 @@ module.exports = class Packet
         switch type
           when "uint8" then @addUInt8 field
           when "int8" then @addInt8 field
-          when "uint16le" then @addUInt16LE field
-          when "uint32le" then @addUInt32LE field
-          when "int16le" then @addInt16LE field
-          when "int32le" then @addInt32LE field
-          when "floatle" then @addFloatLE field
-          when "doublele" then @addDoubleLE field
-          when "stringle" then @addStringLE field
+          when "uint16" then @addUInt16 field
+          when "uint32" then @addUInt32 field
+          when "int16" then @addInt16 field
+          when "int32" then @addInt32 field
+          when "float" then @addFloat field
+          when "double" then @addDouble field
+          when "string" then @addString field
           when /uint8 array [0-9]+:[0-9]+/ then @addUInt8Array field, field.split(' ')[2]
           when /uint16le array [0-9]+:[0-9]+/ then @addUInt16LEArray field, field.split(' ')[2]
           when /uint32le array [0-9]+:[0-9]+/ then @addUInt32LEArray field, field.split(' ')[2]
@@ -80,7 +80,7 @@ module.exports = class Packet
 
     return @
 
-  addUInt16LE: (field) ->
+  addUInt16: (field) ->
     @packetParseData.push {
       name: field
       read: (xml) ->
@@ -89,7 +89,7 @@ module.exports = class Packet
 
     return @
 
-  addUInt32LE: (field) ->
+  addUInt32: (field) ->
     @packetParseData.push {
       name: field
       read: (xml) ->
@@ -98,7 +98,7 @@ module.exports = class Packet
 
     return @
 
-  addInt16LE: (field) ->
+  addInt16: (field) ->
     @packetParseData.push {
       name: field
       read: (xml) ->
@@ -107,7 +107,7 @@ module.exports = class Packet
 
     return @
 
-  addInt32LE: (field) ->
+  addInt32: (field) ->
     @packetParseData.push {
       name: field
       read: (xml) ->
@@ -116,7 +116,7 @@ module.exports = class Packet
 
     return @
 
-  addDoubleLE: (field) ->
+  addDouble: (field) ->
     @packetParseData.push {
       name: field
       read: (xml) ->
@@ -125,7 +125,7 @@ module.exports = class Packet
 
     return @
 
-  addFloatLE: (field) ->
+  addFloat: (field) ->
     @packetParseData.push {
       name: field
       read: (xml) ->
@@ -134,7 +134,7 @@ module.exports = class Packet
 
     return @
 
-  addStringLE: (field) ->
+  addString: (field) ->
     @packetParseData.push {
       name: field
       read: (xml) ->
@@ -156,7 +156,7 @@ module.exports = class Packet
 
     return @
 
-  addUInt16LEArray: (field, count) ->
+  addUInt16Array: (field, count) ->
     @packetParseData.push {
       name: field
       count: count
@@ -169,7 +169,7 @@ module.exports = class Packet
 
     return @
 
-  addUInt32LEArray: (field, count) ->
+  addUInt32Array: (field, count) ->
     @packetParseData.push {
       name: field
       count: count
