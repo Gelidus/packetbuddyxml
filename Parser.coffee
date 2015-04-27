@@ -6,7 +6,7 @@ module.exports = class Parser
 
   constructor: (@isServer) ->
     @head = new Packet("Head")
-    @builder = new xml.Builder()
+    @builder = null
 
     @serverPackets = { }
     @clientPackets = { }
@@ -18,6 +18,10 @@ module.exports = class Parser
   initialize: (rootNode = "root", conditionField = "opcode") ->
     @rootNode = rootNode
     @conditionField = conditionField
+
+    @builder = new xml.Builder({
+      rootName: @rootNode
+    })
 
   ###
     @return [Packet] packet representing head for all packets
@@ -127,6 +131,6 @@ module.exports = class Parser
     for name, value of packet.predefinedValues
       data[name] = value if not data[name]? # assign default value if not defined
 
-    obj = @builder.buildObject(data).replace(/(\r\n|\n|\r)/gm, '')
+    obj = @builder.buildObject(data) #.replace(/(\r\n|\n|\r)/gm, '')
 
     callback(obj)
