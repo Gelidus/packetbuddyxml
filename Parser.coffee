@@ -101,7 +101,7 @@ module.exports = class Parser
     parsedData = { }
 
     parseString data.toString(), (err, result) =>
-      parsed = result[@rootNode]
+      parsed = result[Object.keys(result)[0]]
 
       # parse head
       if @getHead()?
