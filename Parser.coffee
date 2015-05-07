@@ -131,6 +131,5 @@ module.exports = class Parser
     for name, value of packet.predefinedValues
       data[name] = value if not data[name]? # assign default value if not defined
 
-    obj = @builder.buildObject(data) #.replace(/(\r\n|\n|\r)/gm, '')
-
-    callback(obj)
+    @builder.options.rootName = packetName
+    callback(@builder.buildObject(data))
