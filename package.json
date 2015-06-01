@@ -1,6 +1,6 @@
 {
   "name": "packetbuddyxml",
-  "version": "0.0.53a",
+  "version": "0.1.0",
   "description": "Easy to use lightweight xml parser based on top of xml2js",
   "main": "index.js",
   "scripts": {
