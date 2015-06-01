@@ -1,6 +1,7 @@
-Packet = require './Packet'
-{parseString} = require 'xml2js'
-xml = require 'xml2js'
+Promise = require("promise")
+{parseString} = require("xml2js")
+xml = require("xml2js")
+Packet = require("./Packet")
 
 module.exports = class Parser
 
@@ -97,39 +98,41 @@ module.exports = class Parser
       @packetConditions[condition] = packetName
 
   # parse given data by code tables
-  parse: (data, callback, packetName = null) =>
-    parsedData = { }
+  parse: (data, packetName = null) =>
+    return new Promise (fulfill, reject) =>
+      parsedData = { }
 
-    parseString data.toString(), (err, result) =>
-      parsed = result[Object.keys(result)[0]]
+      parseString data.toString(), (err, result) =>
+        parsed = result[Object.keys(result)[0]]
 
-      # parse head
-      if @getHead()?
-        # type is now ignored due to xml
-        for parser in @getHead().packetParseData
-          parsedData[parser["name"]] = if parsed[parser.name]? then parser["read"](parsed) else null
+        # parse head
+        if @getHead()?
+          # type is now ignored due to xml
+          for parser in @getHead().packetParseData
+            parsedData[parser["name"]] = if parsed[parser.name]? then parser["read"](parsed) else null
 
-      # retrieve condition from the parsed data ( should this be in head ? )
-      condition = parsed[@conditionField][0]
+        # retrieve condition from the parsed data ( should this be in head ? )
+        condition = parsed[@conditionField][0]
 
-      name = if packetName? then packetName else @packetConditions[condition]
-      packet = @getPacket(name, !@isServer)
+        name = if packetName? then packetName else @packetConditions[condition]
+        packet = @getPacket(name, !@isServer)
 
-      if not packet?
-        callback(null, null)
-        return
+        if not packet?
+          reject(new Error("Packet not found"))
+          return
 
-      # parse body
-      for parser in packet.packetParseData
-        parsedData[parser["name"]] = if parsed[parser.name]? then parser["read"](parsed)
+        # parse body
+        for parser in packet.packetParseData
+          parsedData[parser["name"]] = if parsed[parser.name]? then parser["read"](parsed)
 
-      callback(name, parsedData)
+        fulfill({name: name, data: parsedData})
 
-  serialize: (data, packetName, callback) =>
-    packet = @getPacket(packetName, @isServer)
+  serialize: (data, packetName) =>
+    return new Promise (fulfill, reject) =>
+      packet = @getPacket(packetName, @isServer)
 
-    for name, value of packet.predefinedValues
-      data[name] = value if not data[name]? # assign default value if not defined
+      for name, value of packet.predefinedValues
+        data[name] = value if not data[name]? # assign default value if not defined
 
-    @builder.options.rootName = packetName
-    callback(@builder.buildObject(data))
+      @builder.options.rootName = packetName
+      fulfill(@builder.buildObject(data))
